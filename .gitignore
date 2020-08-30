@@ -1,5 +1,6 @@
 /server/node_modules
 /server/dist
+/server/src/migrations
 
 yarn-error.log
 .env
