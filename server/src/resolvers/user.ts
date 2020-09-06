@@ -32,10 +32,23 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  @Mutation(() => User, { nullable: true })
+  async me(
+    @Ctx() { req, em }: IResolverContext
+  ): Promise<User | null> {
+    // you are not logged in
+    if (!req.session.userId) {
+      return null
+    }
+
+    const user = await em.findOne(User, {id: req.session.userId})
+    return user
+  }
+
   @Mutation(() => UserResponse)
   async register(
     @Arg('options') options: UsernamePasswordInput,
-    @Ctx() { em }: IResolverContext
+    @Ctx() { em, req }: IResolverContext
   ): Promise<UserResponse> {
     if (options.username.length < 3) {
       return {
@@ -77,17 +90,21 @@ export class UserResolver {
       return {
         errors: [{
           field: 'Username or password',
-          message: 'Can\'t create new user. Probably your nickname is not unique'
+          message: 'Can\'t create new user. Probably your nickname is  not unique'
         }]
       }
     }
+
+    // login user
+    req.session.userId = user.id
+
     return {user}
   }
 
   @Mutation(() => UserResponse)
   async login(
     @Arg('options') options: UsernamePasswordInput,
-    @Ctx() { em }: IResolverContext
+    @Ctx() { em, req }: IResolverContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, {username: options.username})
 
@@ -110,6 +127,8 @@ export class UserResolver {
         }]
       }
     }
+
+    req.session.userId = user.id
 
     return {user}
   }
