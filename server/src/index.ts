@@ -14,17 +14,25 @@ import redis from 'redis'
 import session from 'express-session'
 import connectRedis from 'connect-redis'
 import helmet from 'helmet'
+import cors from 'cors'
 
 import { IResolverContext, ISession } from './types'
-
-const RedisStore = connectRedis(session)
-const redisClient = redis.createClient()
 
 async function main() {
   const orm = await MikroORM.init(mikroORMConfig)
   await orm.getMigrator().up()
 
   const app = express()
+
+  const RedisStore = connectRedis(session)
+  const redisClient = redis.createClient()
+
+  app.use(
+    cors({
+      origin: process.env.ORIGIN,
+      credentials: true
+    })
+  )
 
   if (__prod__) {
     app.use(helmet())
@@ -51,17 +59,19 @@ async function main() {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [
-        HelloResolver,
-        PostResolver,
-        UserResolver
-      ],
-      validate: false,
+      resolvers: [HelloResolver, PostResolver, UserResolver],
+      validate: false
     }),
-    context: (param: {req: Request & { session: ISession & Express.Session }, res: Response}): IResolverContext => ({ em: orm.em, req: param.req, res: param.res })
+    context: (param: {
+      req: Request & { session: ISession & Express.Session }
+      res: Response
+    }): IResolverContext => ({ em: orm.em, req: param.req, res: param.res })
   })
 
-  apolloServer.applyMiddleware({ app })
+  apolloServer.applyMiddleware({
+    app,
+    cors: false
+  })
 
   app.listen(4000, () => {
     console.log('server up and listen port 4000')

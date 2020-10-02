@@ -77,11 +77,17 @@ export class UserResolver {
     try {
       await em.persistAndFlush(user)
     } catch (e) {
+      // TODO замечена проблема при выбросе ошибки https://github.com/mikro-orm/mikro-orm/issues/696
+      // как будто сохраняется один и тот же контекст для разных запросов
+      // один из костыльных вариантов решения делать ИЛИ форк или em.clear после получения ошибки
+      // надо разобраться
+      em.clear()
+
       // duplicate username error
-      if (e.code === '23505' || e.detail.includes('already exists')) {
+      if (e.code === '23505') {
         return {
           errors: [{
-            field: 'Username',
+            field: 'username',
             message: 'Your nickname are not unique'
           }]
         }
@@ -89,8 +95,8 @@ export class UserResolver {
 
       return {
         errors: [{
-          field: 'Username or password',
-          message: 'Can\'t create new user. Probably your nickname is  not unique'
+          field: 'username',
+          message: 'Something went wrong. Try again later'
         }]
       }
     }

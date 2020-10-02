@@ -43,7 +43,12 @@ export class PostResolver {
       post.title = title
     }
 
-    await em.persistAndFlush(post)
+    try {
+      await em.persistAndFlush(post)
+    } catch (e) {
+      em.clear()
+    }
+
     return post
   }
 
@@ -58,7 +63,11 @@ export class PostResolver {
       return null
     }
 
-    await em.removeAndFlush(post)
+    try {
+      await em.removeAndFlush(post)
+    } catch (e) {
+      em.clear()
+    }
     return post
   }
 }
