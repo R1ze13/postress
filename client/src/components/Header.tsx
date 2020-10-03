@@ -1,16 +1,29 @@
 import React from 'react'
-import { Box, Heading, Flex, Button, Link, LinkProps, ButtonProps } from '@chakra-ui/core'
+import {
+  Box,
+  Heading,
+  Flex,
+  Button,
+  Link,
+  LinkProps,
+  ButtonProps,
+  Text
+} from '@chakra-ui/core'
 import NextLink from 'next/link'
+import { useMeQuery } from '../generated/graphql'
 
 const MenuItem: React.FC<LinkProps> = ({ children, ...props }) => (
-  <NextLink href={props.href!}>
+  <NextLink href={props.href || '/'}>
     <Link mr={6} {...props}>
       {children}
     </Link>
   </NextLink>
 )
 
-const ButtonItem: React.FC<ButtonProps & {href?: string}> = ({children, ...props}) => (
+const ButtonItem: React.FC<ButtonProps & { href?: string }> = ({
+  children,
+  ...props
+}) => (
   <NextLink href={props.href || '/'}>
     <Button variantColor="green" mr={2} size="sm" {...props}>
       {children}
@@ -19,13 +32,34 @@ const ButtonItem: React.FC<ButtonProps & {href?: string}> = ({children, ...props
 )
 
 export const Header: React.FC<{}> = (props) => {
+  const [{ data, fetching }] = useMeQuery()
+
+  let userBody = null
+
+  if (fetching) {
+  } else if (!data?.me) {
+    userBody = (
+      <Box display={['none', 'none', 'block']}>
+        <ButtonItem href="/login">Login</ButtonItem>
+        <ButtonItem href="/register">Create account</ButtonItem>
+      </Box>
+    )
+  } else {
+    userBody = (
+      <Flex alignItems="center">
+        <Text mr={4}>{data.me.username}</Text>
+        <Button variantColor="green" size="sm">Logout</Button>
+      </Flex>
+    )
+  }
+
   const handleToggle = () => {
     console.log('toggle')
   }
 
   return (
     <Flex
-      as="nav"
+      as="header"
       align="center"
       justify="space-between"
       p={4}
@@ -39,7 +73,7 @@ export const Header: React.FC<{}> = (props) => {
         </Heading>
       </Flex>
 
-      <Box display={['block', 'none']} onClick={handleToggle}>
+      <Box display={['block', 'block', 'none']} onClick={handleToggle}>
         <svg
           fill="white"
           width="12px"
@@ -52,8 +86,9 @@ export const Header: React.FC<{}> = (props) => {
       </Box>
 
       <Box
-        display={['none', 'flex']}
-        width={['full', 'auto']}
+        as="nav"
+        display={['none', 'none', 'flex']}
+        width={['full', 'full', 'auto']}
         alignItems="center"
         flexGrow={1}
       >
@@ -62,10 +97,7 @@ export const Header: React.FC<{}> = (props) => {
         <MenuItem href="/register">register</MenuItem>
       </Box>
 
-      <Box display={['none', 'block']}>
-        <ButtonItem href="/login">Login</ButtonItem>
-        <ButtonItem href="/register">Create account</ButtonItem>
-      </Box>
+      {userBody}
     </Flex>
   )
 }
