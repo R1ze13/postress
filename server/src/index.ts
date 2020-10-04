@@ -2,7 +2,7 @@ import env from 'dotenv'
 env.config()
 import 'reflect-metadata'
 import { MikroORM } from '@mikro-orm/core'
-import { __prod__ } from './constants'
+import { SESSION_COOKIE_NAME, __prod__ } from './constants'
 import mikroORMConfig from './mikro-orm.config'
 import express, { Response, Request } from 'express'
 import { ApolloServer } from 'apollo-server-express'
@@ -40,7 +40,7 @@ async function main() {
 
   app.use(
     session({
-      name: 'qid',
+      name: SESSION_COOKIE_NAME,
       store: new RedisStore({
         client: redisClient,
         disableTouch: true

@@ -1,7 +1,8 @@
 import { Resolver, Mutation, Arg, InputType, Field, Ctx, ObjectType, Query } from 'type-graphql'
 import { User } from '../entities/User'
-import { IResolverContext } from 'src/types'
+import { IResolverContext } from '../types'
 import argon2 from 'argon2'
+import { SESSION_COOKIE_NAME } from '../constants'
 
 @InputType()
 class UsernamePasswordInput {
@@ -137,5 +138,23 @@ export class UserResolver {
     req.session.userId = user.id
 
     return {user}
+  }
+
+  @Mutation(() => Boolean)
+  logout(
+    @Ctx() { req, res }: IResolverContext
+  ): Promise<boolean> {
+    res.clearCookie(SESSION_COOKIE_NAME)
+    return new Promise(resolve => {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error(err)
+          resolve(false)
+          return
+        }
+
+        resolve(true)
+      })
+    })
   }
 }
