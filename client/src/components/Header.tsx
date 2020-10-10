@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/core'
 import NextLink from 'next/link'
 import { useLogoutMutation, useMeQuery } from '../generated/graphql'
+import { isServer } from '../utils/isServer'
 
 const MenuItem: React.FC<LinkProps> = ({ children, ...props }) => (
   <NextLink href={props.href || '/'}>

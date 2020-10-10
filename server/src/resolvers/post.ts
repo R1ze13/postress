@@ -9,12 +9,12 @@ export class PostResolver {
     return em.find(Post, {})
   }
 
-  @Query(() => Post, {nullable: true})
+  @Query(() => Post, { nullable: true })
   public post(
     @Arg('id', () => Int) id: number,
     @Ctx() { em }: IResolverContext
   ): Promise<Post | null> {
-    return em.findOne(Post, {id})
+    return em.findOne(Post, { id })
   }
 
   @Mutation(() => Post)
@@ -22,18 +22,18 @@ export class PostResolver {
     @Arg('title', () => String) title: string,
     @Ctx() { em }: IResolverContext
   ): Promise<Post> {
-    const post = em.create(Post, {title})
+    const post = em.create(Post, { title })
     await em.persistAndFlush(post)
     return post
   }
 
-  @Mutation(() => Post, {nullable: true})
+  @Mutation(() => Post, { nullable: true })
   public async updatePost(
     @Arg('id', () => Int) id: number,
-    @Arg('title', () => String, {nullable: true}) title: string | undefined,
+    @Arg('title', () => String, { nullable: true }) title: string | undefined,
     @Ctx() { em }: IResolverContext
   ): Promise<Post | null> {
-    const post = await em.findOne(Post, {id})
+    const post = await em.findOne(Post, { id })
 
     if (!post) {
       return null
@@ -52,12 +52,12 @@ export class PostResolver {
     return post
   }
 
-  @Mutation(() => Post, {nullable: true})
+  @Mutation(() => Post, { nullable: true })
   public async deletePost(
     @Arg('id', () => Int) id: number,
     @Ctx() { em }: IResolverContext
   ): Promise<Post | null> {
-    const post = await em.findOne(Post, {id})
+    const post = await em.findOne(Post, { id })
 
     if (!post) {
       return null
